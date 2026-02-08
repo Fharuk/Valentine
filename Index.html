@@ -86,11 +86,13 @@
             outline: none;
             border-color: #fff;
         }
-        .glass-input option {
-            background-color: #FF758C; /* Fallback for mobile */
-            color: black;
-        }
         ::placeholder { color: rgba(255, 255, 255, 0.6); }
+        
+        /* Dropdown styling */
+        select.glass-input option {
+            background-color: #FF758C;
+            color: white;
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased">
@@ -204,18 +206,20 @@
 
         // 2. THE TRAP (TARGET MODE)
         const TargetMode = ({ params }) => {
-            // --- STATE (Must be top level) ---
-            const [step, setStep] = useState(0); 
+            // --- ALL STATE MUST BE DECLARED AT THE TOP ---
+            const [step, setStep] = useState(0); // 0:Gate, 1:Main, 2:Success/Schedule
             const [tilt, setTilt] = useState({ x: 0, y: 0 });
             const [noBtn, setNoBtn] = useState({ x: 0, y: 0, hover: 0 });
             const [yesScale, setYesScale] = useState(1);
-            const [plan, setPlan] = useState({ date: '', time: '', food: 'Suya & Asun', activity: 'Arcade & Gaming' });
+            const [plan, setPlan] = useState({ date: '', time: '', food: 'Sushi', activity: 'Dinner' });
             
+            // Trap Data
             const to = params.get('to');
             const from = params.get('from');
             const msg = params.get('message');
             const vibe = params.get('vibe');
 
+            // Parallax Effect
             useEffect(() => {
                 const handleMove = (e) => {
                     const x = (window.innerWidth / 2 - e.clientX) / 25;
@@ -226,7 +230,7 @@
                 return () => window.removeEventListener('mousemove', handleMove);
             }, []);
 
-            // Step 0: Gatekeeper
+            // Step 0: Gatekeeper (Unlock Audio)
             if (step === 0) {
                 return (
                     <div className="min-h-screen flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm z-50">
@@ -309,21 +313,26 @@
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs text-white/70 ml-2 mb-1 block">When?</label>
+                                <label className="text-xs text-white/70 ml-2 mb-1 block">When are you free?</label>
                                 <input type="date" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setPlan({...plan, date: e.target.value})} />
                             </div>
                             <div>
-                                <label className="text-xs text-white/70 ml-2 mb-1 block">Time?</label>
+                                <label className="text-xs text-white/70 ml-2 mb-1 block">What time?</label>
                                 <input type="time" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setPlan({...plan, time: e.target.value})} />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-white/70 ml-2 mb-1 block">Chow?</label>
-                                    <select className="w-full glass-input rounded-xl px-4 py-3 text-white bg-white/20" onChange={e => setPlan({...plan, food: e.target.value})}>
-                                        <option className="text-black">Suya & Asun</option>
+                                    <label className="text-xs text-white/70 ml-2 mb-1 block">What to eat?</label>
+                                    <select className="w-full glass-input rounded-xl px-4 py-3 text-white" onChange={e => setPlan({...plan, food: e.target.value})}>
+                                        <option className="text-black">Sushi</option>
+                                        <option className="text-black">Italian</option>
+                                        <option className="text-black">Tacos</option>
+                                        <option className="text-black">Steak</option>
+                                        <option className="text-black">Burgers</option>
                                         <option className="text-black">Zobo</option>
                                         <option className="text-black">Chapman</option>
                                         <option className="text-black">Mama put</option>
+                                        <option className="text-black">Suya & Asun</option>
                                         <option className="text-black">Bread & beans</option>
                                         <option className="text-black">Snacks</option>
                                         <option className="text-black">Shawarma</option>
@@ -334,15 +343,19 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-white/70 ml-2 mb-1 block">Vibe?</label>
-                                    <select className="w-full glass-input rounded-xl px-4 py-3 text-white bg-white/20" onChange={e => setPlan({...plan, activity: e.target.value})}>
-                                        <option className="text-black">Arcade & Gaming</option>
+                                    <label className="text-xs text-white/70 ml-2 mb-1 block">What to do?</label>
+                                    <select className="w-full glass-input rounded-xl px-4 py-3 text-white" onChange={e => setPlan({...plan, activity: e.target.value})}>
+                                        <option className="text-black">Dinner</option>
+                                        <option className="text-black">Drinks</option>
+                                        <option className="text-black">Movie</option>
+                                        <option className="text-black">Walk</option>
                                         <option className="text-black">Walk in the Park</option>
                                         <option className="text-black">Library date</option>
                                         <option className="text-black">Karaoke Night</option>
-                                        <option className="text-black">Genital greetings with each other</option>
-                                        <option className="text-black">Nature & Scenic Escapes</option>
-                                        <option className="text-black">Beach Day Getaway</option>
+                                        <option className="text-black">Genital greetings</option>
+                                        <option className="text-black">Nature & Scenic</option>
+                                        <option className="text-black">Beach Day</option>
+                                        <option className="text-black">Arcade & Gaming</option>
                                         <option className="text-black">Horseback Riding</option>
                                         <option className="text-black">Surprise me</option>
                                     </select>
