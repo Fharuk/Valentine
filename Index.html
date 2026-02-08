@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Valentine OS v3.1</title>
+    <title>Valentine OS v3.2</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -36,14 +36,13 @@
                         'float': 'float 6s ease-in-out infinite',
                         'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
                         'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'fade-in': 'fadeIn 1s ease-out',
-                        'pulse-slow': 'pulse 3s infinite',
+                        'pop': 'pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     },
                     keyframes: {
                         float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
                         heartbeat: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.05)' } },
                         slideUp: { '0%': { transform: 'translateY(40px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
+                        pop: { '0%': { transform: 'scale(0.9) opacity(0)' }, '100%': { transform: 'scale(1) opacity(1)' } }
                     }
                 }
             }
@@ -87,8 +86,6 @@
             outline: none;
             border-color: #fff;
         }
-        
-        /* Placeholder Color */
         ::placeholder { color: rgba(255, 255, 255, 0.6); }
     </style>
 </head>
@@ -97,33 +94,14 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
-        // --- ICONS (Inline SVG Components to prevent crashing) ---
-        const IconHeart = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-        );
-        const IconMusic = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        );
-        const IconLock = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        );
-        const IconShare = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
-        );
-        const IconSmartphone = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-        );
-        const IconCopy = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-        );
-        const IconCheck = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>
-        );
-        const IconCalendar = ({className}) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-        );
+        // --- INLINE ICONS ---
+        const IconHeart = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>);
+        const IconMusic = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>);
+        const IconLock = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>);
+        const IconCopy = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>);
+        const IconCalendar = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>);
 
         // --- UTILS ---
         const playAudio = (type) => {
@@ -136,16 +114,13 @@
 
         const generateICS = (event) => {
             const text = [
-                'BEGIN:VCALENDAR',
-                'VERSION:2.0',
-                'BEGIN:VEVENT',
+                'BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
                 `SUMMARY:Valentine's Date with ${event.who}`,
                 `DTSTART:${event.date.replace(/-/g, '')}T${event.time.replace(/:/g, '')}00`,
                 `DTEND:${event.date.replace(/-/g, '')}T${parseInt(event.time.slice(0,2))+2}${event.time.slice(2)}00`,
                 `DESCRIPTION:Activity: ${event.activity} | Food: ${event.food}`,
                 `LOCATION:${event.activity}`,
-                'END:VEVENT',
-                'END:VCALENDAR'
+                'END:VEVENT', 'END:VCALENDAR'
             ].join('\n');
             const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
             const link = document.createElement('a');
@@ -161,10 +136,7 @@
         // 1. CREATOR DASHBOARD
         const CreatorMode = () => {
             const [formData, setFormData] = useState({
-                to: '', from: '', message: 'Will you be my Valentine?',
-                img1: '', img2: '', img3: '',
-                vibe: 'lofi',
-                webhook: ''
+                to: '', from: '', message: 'Will you be my Valentine?', vibe: 'lofi'
             });
             const [link, setLink] = useState('');
 
@@ -177,49 +149,35 @@
 
             return (
                 <div className="min-h-screen flex items-center justify-center p-4">
-                    <div className="glass-panel w-full max-w-2xl p-8 rounded-3xl animate-slide-up relative overflow-hidden">
+                    <div className="glass-panel w-full max-w-lg p-8 rounded-3xl animate-slide-up relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-300 to-rose-400"></div>
                         
                         <div className="flex items-center gap-3 mb-6">
                             <div className="bg-white/20 p-3 rounded-full"><IconHeart className="text-white fill-white" /></div>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">v3.1</span></h1>
-                                <p className="text-white/70 text-sm">Configure your conversion trap.</p>
+                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">Lite</span></h1>
+                                <p className="text-white/70 text-sm">Create your conversion trap.</p>
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <h3 className="text-white font-semibold flex items-center gap-2"><IconLock className="w-4 h-4"/> Core Data</h3>
-                                <input placeholder="Their Name (Target)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, to: e.target.value})} />
-                                <input placeholder="Your Name (Sender)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, from: e.target.value})} />
-                                <input placeholder="The Question" defaultValue="Will you be my Valentine?" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, message: e.target.value})} />
-                                
-                                <h3 className="text-white font-semibold flex items-center gap-2 mt-6"><IconMusic className="w-4 h-4"/> Vibe Control</h3>
-                                <select className="w-full glass-input rounded-xl px-4 py-3 text-white bg-white/20" onChange={e => setFormData({...formData, vibe: e.target.value})}>
-                                    <option value="lofi" className="text-black">Lo-Fi Chill (Safe)</option>
-                                    <option value="jazz" className="text-black">Smooth Jazz (Classy)</option>
-                                    <option value="pop" className="text-black">Upbeat Pop (Fun)</option>
-                                </select>
-                            </div>
-
-                            <div className="space-y-4">
-                                <h3 className="text-white font-semibold flex items-center gap-2"><IconSmartphone className="w-4 h-4"/> Memory Lane (Optional)</h3>
-                                <p className="text-xs text-white/60">Paste direct image URLs (Discord/Imgur/etc.)</p>
-                                <input placeholder="Photo URL 1 (The Meet)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, img1: e.target.value})} />
-                                <input placeholder="Photo URL 2 (The Memory)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, img2: e.target.value})} />
-                                <input placeholder="Photo URL 3 (The Closer)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, img3: e.target.value})} />
-                                
-                                <h3 className="text-white font-semibold flex items-center gap-2 mt-6"><IconShare className="w-4 h-4"/> Surveillance (Optional)</h3>
-                                <input placeholder="Discord Webhook URL" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, webhook: e.target.value})} />
-                                <p className="text-[10px] text-white/50">Only for advanced users. Triggers when they open the link.</p>
-                            </div>
+                        <div className="space-y-4">
+                            <h3 className="text-white font-semibold flex items-center gap-2"><IconLock className="w-4 h-4"/> Core Details</h3>
+                            <input placeholder="Their Name (Target)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, to: e.target.value})} />
+                            <input placeholder="Your Name (Sender)" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, from: e.target.value})} />
+                            <input placeholder="The Question" defaultValue="Will you be my Valentine?" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, message: e.target.value})} />
+                            
+                            <h3 className="text-white font-semibold flex items-center gap-2 mt-4"><IconMusic className="w-4 h-4"/> Vibe Control</h3>
+                            <select className="w-full glass-input rounded-xl px-4 py-3 text-white bg-white/20" onChange={e => setFormData({...formData, vibe: e.target.value})}>
+                                <option value="lofi" className="text-black">Lo-Fi Chill</option>
+                                <option value="jazz" className="text-black">Smooth Jazz</option>
+                                <option value="pop" className="text-black">Upbeat Pop</option>
+                            </select>
                         </div>
 
                         <div className="mt-8 pt-6 border-t border-white/20">
                             {!link ? (
                                 <button onClick={generate} className="w-full bg-white text-rose-500 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
-                                    <IconHeart className="fill-current w-5 h-5"/> Generate Trap Link
+                                    <IconHeart className="fill-current w-5 h-5"/> Generate Link
                                 </button>
                             ) : (
                                 <div className="bg-black/20 p-4 rounded-xl backdrop-blur-sm border border-white/30">
@@ -242,8 +200,7 @@
 
         // 2. THE TRAP (TARGET MODE)
         const TargetMode = ({ params }) => {
-            const [step, setStep] = useState(0); // 0:Gate, 1:Memory, 2:Main, 3:Success, 4:Schedule
-            const [audio, setAudio] = useState(null);
+            const [step, setStep] = useState(0); // 0:Gate, 1:Main, 2:Success/Schedule
             const [tilt, setTilt] = useState({ x: 0, y: 0 });
             
             // Trap Data
@@ -251,21 +208,10 @@
             const from = params.get('from');
             const msg = params.get('message');
             const vibe = params.get('vibe');
-            const webhook = params.get('webhook');
-            const images = [params.get('img1'), params.get('img2'), params.get('img3')].filter(Boolean);
 
             // "No" Button Physics
             const [noBtn, setNoBtn] = useState({ x: 0, y: 0, hover: 0 });
             const [yesScale, setYesScale] = useState(1);
-
-            // Webhook Trigger (The Snitch)
-            useEffect(() => {
-                if (webhook && step === 0) {
-                    try {
-                        navigator.sendBeacon(webhook, JSON.stringify({ content: `🚨 **ALERT**: ${to} has opened the Valentine Trap!` }));
-                    } catch(e) {}
-                }
-            }, []);
 
             // Parallax Effect
             useEffect(() => {
@@ -288,10 +234,7 @@
                             </div>
                             <h1 className="text-white text-3xl font-serif font-bold mb-2">For {to}</h1>
                             <p className="text-white/70 mb-8">A special message from {from}</p>
-                            <button onClick={() => {
-                                setAudio(playAudio(vibe));
-                                setStep(images.length > 0 ? 1 : 2);
-                            }} className="bg-white text-rose-500 px-10 py-4 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-transform">
+                            <button onClick={() => { playAudio(vibe); setStep(1); }} className="bg-white text-rose-500 px-10 py-4 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-transform">
                                 Open Message
                             </button>
                         </div>
@@ -299,36 +242,8 @@
                 );
             }
 
-            // Step 1: Memory Lane (Carousel)
+            // Step 1: The Main Trap
             if (step === 1) {
-                const [slide, setSlide] = useState(0);
-                useEffect(() => {
-                    if (slide >= images.length) {
-                        setTimeout(() => setStep(2), 2000);
-                        return;
-                    }
-                    const timer = setTimeout(() => setSlide(s => s + 1), 3500); // 3.5s per slide
-                    return () => clearTimeout(timer);
-                }, [slide]);
-
-                return (
-                    <div className="min-h-screen flex items-center justify-center p-4">
-                        {slide < images.length ? (
-                            <div className="glass-panel p-4 rounded-3xl max-w-sm w-full aspect-[4/5] relative overflow-hidden animate-fade-in">
-                                <img src={images[slide]} className="w-full h-full object-cover rounded-2xl" />
-                                <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
-                                    <p className="text-white font-serif text-xl italic">Remember this?</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-white font-serif text-3xl animate-pulse">Ready?</div>
-                        )}
-                    </div>
-                );
-            }
-
-            // Step 2: The Main Trap
-            if (step === 2) {
                 const moveNo = () => {
                     setNoBtn({ 
                         x: Math.random() * 200 - 100, 
@@ -340,8 +255,7 @@
 
                 const handleYes = () => {
                     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                    setStep(3);
-                    if (webhook) navigator.sendBeacon(webhook, JSON.stringify({ content: `✅ **SUCCESS**: ${to} said YES!` }));
+                    setStep(2);
                 };
 
                 const rejections = ["No", "Are you sure?", "Really?", "Don't do this", "Last chance!", "Heartbreaker!"];
@@ -376,7 +290,7 @@
                 );
             }
 
-            // Step 3 & 4: Success & Scheduler
+            // Step 2: Scheduler
             const [plan, setPlan] = useState({ date: '', time: '', food: 'Sushi', activity: 'Dinner' });
 
             const finish = () => {
