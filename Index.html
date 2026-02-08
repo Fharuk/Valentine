@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Valentine?</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'romance-light': '#FF7EB3',
+                        'romance-dark': '#FF758C',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 25px 50px -12px rgba(255, 117, 140, 0.25);
+        }
+        
+        .glass-button {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Cursor hiding for the No button interaction */
+        body {
+            overflow: hidden; /* Prevent scrolling on mobile */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-romance-dark to-romance-light min-h-screen flex items-center justify-center p-4">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const ValentineApp = () => {
+            const [noBtnPosition, setNoBtnPosition] = useState({ x: 0, y: 0 });
+            const [isHovered, setIsHovered] = useState(false);
+            const [text, setText] = useState('');
+            const [accepted, setAccepted] = useState(false);
+            
+            const fullText = "Will you be my Valentine?";
+            
+            // Typewriter Effect
+            useEffect(() => {
+                let index = 0;
+                const timer = setInterval(() => {
+                    setText(fullText.slice(0, index));
+                    index++;
+                    if (index > fullText.length) clearInterval(timer);
+                }, 100);
+                return () => clearInterval(timer);
+            }, []);
+
+            // The "Run Away" Logic
+            const moveButton = () => {
+                const x = Math.random() * (window.innerWidth < 640 ? 100 : 200) - (window.innerWidth < 640 ? 50 : 100);
+                const y = Math.random() * (window.innerWidth < 640 ? 100 : 200) - (window.innerWidth < 640 ? 50 : 100);
+                setNoBtnPosition({ x, y });
+                setIsHovered(true);
+            };
+
+            const handleYesClick = () => {
+                setAccepted(true);
+                // Trigger confetti or final state here
+            };
+
+            if (accepted) {
+                return (
+                    <div className="glass-panel p-12 rounded-[32px] text-center animate-float max-w-md w-full">
+                         <div className="w-40 h-40 mx-auto mb-6 relative">
+                            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-white drop-shadow-lg">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h1 className="font-serif text-4xl text-white font-bold mb-4 drop-shadow-md">She said YES! 💖</h1>
+                        <p className="font-sans text-white/90 text-lg">Best decision you've made all year.</p>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="relative w-full max-w-sm sm:max-w-md">
+                    {/* Main Card */}
+                    <div className="glass-panel rounded-[32px] p-8 sm:p-12 flex flex-col items-center relative z-10 transition-all duration-500 hover:scale-[1.02]">
+                        
+                        {/* Section 1: Visual Hook (Heart) */}
+                        <div className="mb-8 relative w-48 h-48 animate-float">
+                            {/* 3D-style CSS Heart using gradients and shadows */}
+                            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full drop-shadow-2xl filter">
+                                <defs>
+                                    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stopColor="#FF9A9E" />
+                                        <stop offset="100%" stopColor="#FECFEF" />
+                                    </linearGradient>
+                                    <filter id="glow">
+                                        <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                        <feMerge>
+                                            <feMergeNode in="coloredBlur"/>
+                                            <feMergeNode in="SourceGraphic"/>
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <path 
+                                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
+                                    fill="url(#heartGrad)" 
+                                    stroke="white" 
+                                    strokeWidth="0.5"
+                                    className="drop-shadow-xl"
+                                />
+                                <circle cx="16" cy="7" r="2" fill="white" fillOpacity="0.4" />
+                            </svg>
+                        </div>
+
+                        {/* Section 2: Typography */}
+                        <div className="h-20 mb-8 flex items-center justify-center">
+                            <h1 className="font-serif text-3xl sm:text-4xl text-slate-800 text-center font-semibold leading-tight tracking-tight">
+                                {text}
+                                <span className="animate-pulse">|</span>
+                            </h1>
+                        </div>
+
+                        {/* Section 3: Interaction */}
+                        <div className="flex flex-col gap-4 w-full items-center relative h-32">
+                            {/* YES Button */}
+                            <button 
+                                onClick={handleYesClick}
+                                className="w-full bg-gradient-to-r from-romance-dark to-romance-light text-white font-sans font-semibold text-lg py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 transform group"
+                            >
+                                <span className="flex items-center justify-center gap-2">
+                                    Yes, absolutely! 
+                                    <span className="group-hover:translate-x-1 transition-transform">✨</span>
+                                </span>
+                            </button>
+
+                            {/* NO Button (The Dodger) */}
+                            <button 
+                                onMouseEnter={moveButton}
+                                onTouchStart={moveButton} /* Mobile support */
+                                style={{
+                                    transform: `translate(${noBtnPosition.x}px, ${noBtnPosition.y}px)`,
+                                    transition: 'all 0.2s ease-out'
+                                }}
+                                className="glass-button text-slate-500 font-sans text-sm py-3 px-8 rounded-full hover:bg-white/50 transition-colors absolute bottom-0"
+                            >
+                                No thanks.
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ValentineApp />);
+    </script>
+</body>
+</html>
