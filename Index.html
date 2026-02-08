@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Be My Valentine?</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -11,7 +11,9 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -20,6 +22,8 @@
                     colors: {
                         'romance-light': '#FF7EB3',
                         'romance-dark': '#FF758C',
+                        'glass-surface': 'rgba(255, 255, 255, 0.35)',
+                        'glass-border': 'rgba(255, 255, 255, 0.6)',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -28,11 +32,16 @@
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     },
                     keyframes: {
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.9)' },
+                            '100%': { transform: 'scale(1)' },
                         }
                     }
                 }
@@ -41,28 +50,37 @@
     </script>
 
     <style>
-        /* Custom Glassmorphism Utilities */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 25px 50px -12px rgba(255, 117, 140, 0.25);
-        }
-        
-        .glass-button {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
+        body {
+            overflow: hidden;
+            background: linear-gradient(135deg, #FF758C 0%, #FF7EB3 50%, #FF758C 100%);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
         }
 
-        /* Cursor hiding for the No button interaction */
-        body {
-            overflow: hidden; /* Prevent scrolling on mobile */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Premium Glassmorphism */
+        .glass-panel {
+            background: var(--glass-surface);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 25px 50px -12px rgba(255, 117, 140, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+        }
+
+        /* 3D Heart Glow */
+        .heart-glow {
+            filter: drop-shadow(0 0 15px rgba(255, 117, 140, 0.6));
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-romance-dark to-romance-light min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
 
     <div id="root"></div>
 
@@ -70,13 +88,33 @@
         const { useState, useEffect, useRef } = React;
 
         const ValentineApp = () => {
-            const [noBtnPosition, setNoBtnPosition] = useState({ x: 0, y: 0 });
-            const [isHovered, setIsHovered] = useState(false);
+            const [noBtnState, setNoBtnState] = useState({ x: 0, y: 0, hoverCount: 0 });
+            const [yesScale, setYesScale] = useState(1);
             const [text, setText] = useState('');
             const [accepted, setAccepted] = useState(false);
             
             const fullText = "Will you be my Valentine?";
             
+            // The "Guilt Trip" text array
+            const rejectionTexts = [
+                "No thanks.",
+                "Are you sure?",
+                "Really sure?",
+                "Think again!",
+                "Last chance!",
+                "Surely not?",
+                "You might regret this!",
+                "Give it another thought!",
+                "Are you absolutely certain?",
+                "This could be a mistake!",
+                "Have a heart!",
+                "Don't be so cold!",
+                "Change of heart?",
+                "Wouldn't you reconsider?",
+                "Is that your final answer?",
+                "You're breaking my heart ;(",
+            ];
+
             // Typewriter Effect
             useEffect(() => {
                 let index = 0;
@@ -88,80 +126,109 @@
                 return () => clearInterval(timer);
             }, []);
 
-            // The "Run Away" Logic
-            const moveButton = () => {
-                const x = Math.random() * (window.innerWidth < 640 ? 100 : 200) - (window.innerWidth < 640 ? 50 : 100);
-                const y = Math.random() * (window.innerWidth < 640 ? 100 : 200) - (window.innerWidth < 640 ? 50 : 100);
-                setNoBtnPosition({ x, y });
-                setIsHovered(true);
+            // Confetti Trigger
+            const triggerConfetti = () => {
+                const duration = 3 * 1000;
+                const animationEnd = Date.now() + duration;
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 50 };
+
+                const random = (min, max) => Math.random() * (max - min) + min;
+
+                const interval = setInterval(() => {
+                    const timeLeft = animationEnd - Date.now();
+
+                    if (timeLeft <= 0) {
+                        return clearInterval(interval);
+                    }
+
+                    const particleCount = 50 * (timeLeft / duration);
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                    confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+                }, 250);
+            };
+
+            // "No" Button Interaction Logic
+            const handleNoInteraction = () => {
+                // 1. Move the button to a random location
+                const x = Math.random() * (window.innerWidth < 640 ? 150 : 300) - (window.innerWidth < 640 ? 75 : 150);
+                const y = Math.random() * (window.innerWidth < 640 ? 150 : 300) - (window.innerWidth < 640 ? 75 : 150);
+                
+                // 2. Increment rejection state (changes text)
+                setNoBtnState(prev => ({
+                    x,
+                    y,
+                    hoverCount: prev.hoverCount + 1
+                }));
+
+                // 3. Make the YES button bigger (Coercive Design)
+                setYesScale(prev => Math.min(prev + 0.2, 3)); // Cap scale at 3x
             };
 
             const handleYesClick = () => {
                 setAccepted(true);
-                // Trigger confetti or final state here
+                triggerConfetti();
+            };
+
+            // Get current rejection text based on hover count
+            const getRejectionText = () => {
+                return rejectionTexts[Math.min(noBtnState.hoverCount, rejectionTexts.length - 1)];
             };
 
             if (accepted) {
                 return (
-                    <div className="glass-panel p-12 rounded-[32px] text-center animate-float max-w-md w-full">
-                         <div className="w-40 h-40 mx-auto mb-6 relative">
-                            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-white drop-shadow-lg">
+                    <div className="glass-panel p-8 sm:p-12 rounded-[32px] text-center animate-pop max-w-md w-full mx-4">
+                         <div className="w-40 h-40 mx-auto mb-6 relative animate-float">
+                            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-white drop-shadow-lg heart-glow">
                                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
                             </svg>
                         </div>
-                        <h1 className="font-serif text-4xl text-white font-bold mb-4 drop-shadow-md">She said YES! 💖</h1>
+                        <h1 className="font-serif text-3xl sm:text-4xl text-white font-bold mb-4 drop-shadow-md">She said YES! 💖</h1>
                         <p className="font-sans text-white/90 text-lg">Best decision you've made all year.</p>
+                        <div className="mt-8 text-white/60 text-sm">See you on the 14th xoxo</div>
                     </div>
                 );
             }
 
             return (
-                <div className="relative w-full max-w-sm sm:max-w-md">
+                <div className="relative w-full max-w-[90%] sm:max-w-md">
                     {/* Main Card */}
-                    <div className="glass-panel rounded-[32px] p-8 sm:p-12 flex flex-col items-center relative z-10 transition-all duration-500 hover:scale-[1.02]">
+                    <div className="glass-panel rounded-[32px] p-8 sm:p-12 flex flex-col items-center relative z-10 transition-all duration-500 hover:shadow-[0_35px_60px_-15px_rgba(255,117,140,0.4)]">
                         
-                        {/* Section 1: Visual Hook (Heart) */}
-                        <div className="mb-8 relative w-48 h-48 animate-float">
-                            {/* 3D-style CSS Heart using gradients and shadows */}
-                            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full drop-shadow-2xl filter">
+                        {/* Visual Hook (Heart) */}
+                        <div className="mb-6 relative w-40 h-40 sm:w-48 sm:h-48 animate-float">
+                            <svg viewBox="0 0 24 24" fill="none" className="w-full h-full heart-glow">
                                 <defs>
                                     <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                                         <stop offset="0%" stopColor="#FF9A9E" />
                                         <stop offset="100%" stopColor="#FECFEF" />
                                     </linearGradient>
-                                    <filter id="glow">
-                                        <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                                        <feMerge>
-                                            <feMergeNode in="coloredBlur"/>
-                                            <feMergeNode in="SourceGraphic"/>
-                                        </feMerge>
-                                    </filter>
                                 </defs>
                                 <path 
                                     d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
                                     fill="url(#heartGrad)" 
                                     stroke="white" 
                                     strokeWidth="0.5"
-                                    className="drop-shadow-xl"
                                 />
-                                <circle cx="16" cy="7" r="2" fill="white" fillOpacity="0.4" />
+                                <circle cx="16" cy="7" r="2" fill="white" fillOpacity="0.5" />
                             </svg>
                         </div>
 
-                        {/* Section 2: Typography */}
-                        <div className="h-20 mb-8 flex items-center justify-center">
-                            <h1 className="font-serif text-3xl sm:text-4xl text-slate-800 text-center font-semibold leading-tight tracking-tight">
+                        {/* Typography */}
+                        <div className="h-16 mb-8 flex items-center justify-center">
+                            <h1 className="font-serif text-2xl sm:text-3xl text-slate-800 text-center font-bold leading-tight tracking-tight drop-shadow-sm">
                                 {text}
-                                <span className="animate-pulse">|</span>
+                                <span className="animate-pulse ml-1">|</span>
                             </h1>
                         </div>
 
-                        {/* Section 3: Interaction */}
-                        <div className="flex flex-col gap-4 w-full items-center relative h-32">
+                        {/* Interaction Zone */}
+                        <div className="flex flex-col gap-4 w-full items-center relative h-32 justify-center">
+                            
                             {/* YES Button */}
                             <button 
                                 onClick={handleYesClick}
-                                className="w-full bg-gradient-to-r from-romance-dark to-romance-light text-white font-sans font-semibold text-lg py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 transform group"
+                                style={{ transform: `scale(${yesScale})` }}
+                                className="z-50 bg-gradient-to-r from-romance-dark to-romance-light text-white font-sans font-bold text-lg py-3 px-10 rounded-full shadow-lg hover:shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300 transform group whitespace-nowrap"
                             >
                                 <span className="flex items-center justify-center gap-2">
                                     Yes, absolutely! 
@@ -171,15 +238,17 @@
 
                             {/* NO Button (The Dodger) */}
                             <button 
-                                onMouseEnter={moveButton}
-                                onTouchStart={moveButton} /* Mobile support */
+                                onMouseEnter={handleNoInteraction}
+                                onTouchStart={(e) => { e.preventDefault(); handleNoInteraction(); }}
+                                onClick={handleNoInteraction}
                                 style={{
-                                    transform: `translate(${noBtnPosition.x}px, ${noBtnPosition.y}px)`,
-                                    transition: 'all 0.2s ease-out'
+                                    transform: `translate(${noBtnState.x}px, ${noBtnState.y}px)`,
+                                    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                                    opacity: Math.max(0.2, 1 - (noBtnState.hoverCount * 0.1)) // Fades out eventually
                                 }}
-                                className="glass-button text-slate-500 font-sans text-sm py-3 px-8 rounded-full hover:bg-white/50 transition-colors absolute bottom-0"
+                                className="glass-button text-slate-600 font-sans text-sm py-2 px-6 rounded-full hover:bg-white/40 transition-colors absolute bottom-0 border border-white/50"
                             >
-                                No thanks.
+                                {getRejectionText()}
                             </button>
                         </div>
                     </div>
