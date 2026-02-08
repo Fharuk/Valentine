@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Valentine OS v3.2</title>
+    <title>Valentine OS v3.3 (Stable)</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -155,7 +155,7 @@
                         <div className="flex items-center gap-3 mb-6">
                             <div className="bg-white/20 p-3 rounded-full"><IconHeart className="text-white fill-white" /></div>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">Lite</span></h1>
+                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">v3.3</span></h1>
                                 <p className="text-white/70 text-sm">Create your conversion trap.</p>
                             </div>
                         </div>
@@ -200,18 +200,18 @@
 
         // 2. THE TRAP (TARGET MODE)
         const TargetMode = ({ params }) => {
+            // --- ALL STATE MUST BE DECLARED AT THE TOP ---
             const [step, setStep] = useState(0); // 0:Gate, 1:Main, 2:Success/Schedule
             const [tilt, setTilt] = useState({ x: 0, y: 0 });
+            const [noBtn, setNoBtn] = useState({ x: 0, y: 0, hover: 0 });
+            const [yesScale, setYesScale] = useState(1);
+            const [plan, setPlan] = useState({ date: '', time: '', food: 'Sushi', activity: 'Dinner' });
             
             // Trap Data
             const to = params.get('to');
             const from = params.get('from');
             const msg = params.get('message');
             const vibe = params.get('vibe');
-
-            // "No" Button Physics
-            const [noBtn, setNoBtn] = useState({ x: 0, y: 0, hover: 0 });
-            const [yesScale, setYesScale] = useState(1);
 
             // Parallax Effect
             useEffect(() => {
@@ -291,8 +291,6 @@
             }
 
             // Step 2: Scheduler
-            const [plan, setPlan] = useState({ date: '', time: '', food: 'Sushi', activity: 'Dinner' });
-
             const finish = () => {
                 const text = `Hey ${from}! I said YES! 💖\n\nI'm free on ${plan.date} at ${plan.time}.\nWe're getting ${plan.food} for ${plan.activity}.\n\nAdd to calendar: (See attachment)`;
                 generateICS({ ...plan, who: from });
