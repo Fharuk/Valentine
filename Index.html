@@ -3,29 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Valentine OS</title>
+    <title>Valentine OS v3.0</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
-
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        const TUNES = {
+            jazz: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc8c81216a.mp3?filename=smooth-jazz-112932.mp3",
+            lofi: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3",
+            pop: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=pop-1-1095.mp3"
+        };
+    </script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'romance-light': '#FF7EB3',
-                        'romance-dark': '#FF758C',
-                        'glass-surface': 'rgba(255, 255, 255, 0.25)',
-                        'glass-border': 'rgba(255, 255, 255, 0.4)',
+                        'romance': '#FF7EB3',
+                        'passion': '#FF758C',
+                        'glass': 'rgba(255, 255, 255, 0.25)',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -33,22 +35,15 @@
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
-                        'pop': 'pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                        'slide-up': 'slideUp 0.5s ease-out',
+                        'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'fade-in': 'fadeIn 1s ease-out',
                     },
                     keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        pop: {
-                            '0%': { transform: 'scale(0.9) opacity(0)' },
-                            '100%': { transform: 'scale(1) opacity(1)' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        }
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        heartbeat: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.05)' } },
+                        slideUp: { '0%': { transform: 'translateY(40px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
                     }
                 }
             }
@@ -56,11 +51,14 @@
     </script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
         body {
-            overflow-x: hidden;
+            overflow: hidden;
             background: linear-gradient(135deg, #FF758C 0%, #FF7EB3 50%, #FF758C 100%);
             background-size: 200% 200%;
             animation: gradientBG 15s ease infinite;
+            touch-action: manipulation;
         }
 
         @keyframes gradientBG {
@@ -70,100 +68,144 @@
         }
 
         .glass-panel {
-            background: var(--glass-surface);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         }
-        
-        /* Custom Input Styling */
+
         .glass-input {
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            color: #1e293b;
-            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
         }
-        .glass-input::placeholder { color: rgba(71, 85, 105, 0.6); }
-        .glass-input:focus { 
-            outline: none; 
-            border-color: #fff; 
-            background: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.25);
+            outline: none;
+            border-color: #fff;
         }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="min-h-screen font-sans text-slate-800">
+<body class="text-slate-800 antialiased">
 
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
-        
+        const { useState, useEffect, useRef } = React;
+        const { Heart, Music, Calendar, Share2, Copy, Lock, Smartphone, ChevronRight, CheckCircle } = lucide;
+
+        // --- UTILS ---
+        const playAudio = (type) => {
+            const audio = new Audio(TUNES[type] || TUNES.lofi);
+            audio.loop = true;
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log("Audio require interaction"));
+            return audio;
+        };
+
+        const generateICS = (event) => {
+            const text = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'BEGIN:VEVENT',
+                `SUMMARY:Valentine's Date with ${event.who}`,
+                `DTSTART:${event.date.replace(/-/g, '')}T${event.time.replace(/:/g, '')}00`,
+                `DTEND:${event.date.replace(/-/g, '')}T${parseInt(event.time.slice(0,2))+2}${event.time.slice(2)}00`,
+                `DESCRIPTION:Activity: ${event.activity} | Food: ${event.food}`,
+                `LOCATION:${event.activity}`,
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\n');
+            const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'valentines_date.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
         // --- COMPONENTS ---
 
-        // 1. CREATOR DASHBOARD (Admin Mode)
-        const CreatorMode = ({ onGenerate }) => {
+        // 1. CREATOR DASHBOARD
+        const CreatorMode = () => {
             const [formData, setFormData] = useState({
-                to: '',
-                from: '',
-                message: 'Will you be my Valentine?',
-                imgUrl: ''
+                to: '', from: '', message: 'Will you be my Valentine?',
+                img1: '', img2: '', img3: '',
+                vibe: 'lofi',
+                webhook: ''
             });
-            const [generatedLink, setGeneratedLink] = useState('');
+            const [link, setLink] = useState('');
 
-            const generateLink = () => {
-                if(!formData.to || !formData.from) return;
+            const generate = () => {
+                if(!formData.to || !formData.from) return alert("Names are required!");
                 const params = new URLSearchParams(formData).toString();
-                const link = `${window.location.origin}${window.location.pathname}?${params}`;
-                setGeneratedLink(link);
-            };
-
-            const copyToClipboard = () => {
-                navigator.clipboard.writeText(generatedLink);
-                alert("Link copied! Send it to them.");
+                const finalLink = `${window.location.origin}${window.location.pathname}?${params}`;
+                setLink(finalLink);
             };
 
             return (
                 <div className="min-h-screen flex items-center justify-center p-4">
-                    <div className="glass-panel w-full max-w-lg p-8 rounded-3xl animate-slide-up">
-                        <h1 className="font-serif text-3xl font-bold text-white mb-2">Valentine OS <span className="text-sm font-sans opacity-60 font-normal">v2.0</span></h1>
-                        <p className="text-white/80 mb-6">Create your custom conversion trap.</p>
+                    <div className="glass-panel w-full max-w-2xl p-8 rounded-3xl animate-slide-up relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-300 to-rose-400"></div>
                         
-                        <div className="space-y-4">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="bg-white/20 p-3 rounded-full"><Heart className="text-white fill-white" /></div>
                             <div>
-                                <label className="block text-sm font-medium text-white/90 mb-1">Who is this for?</label>
-                                <input type="text" placeholder="e.g. Sarah" className="w-full glass-input rounded-xl px-4 py-3" 
-                                    onChange={e => setFormData({...formData, to: e.target.value})} />
+                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">v3.0</span></h1>
+                                <p className="text-white/70 text-sm">Configure your conversion trap.</p>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-white/90 mb-1">Your Name</label>
-                                <input type="text" placeholder="e.g. Mike" className="w-full glass-input rounded-xl px-4 py-3" 
-                                    onChange={e => setFormData({...formData, from: e.target.value})} />
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <h3 className="text-white font-semibold flex items-center gap-2"><Lock size={16}/> Core Data</h3>
+                                <input placeholder="Their Name (Target)" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, to: e.target.value})} />
+                                <input placeholder="Your Name (Sender)" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, from: e.target.value})} />
+                                <input placeholder="The Question" defaultValue="Will you be my Valentine?" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, message: e.target.value})} />
+                                
+                                <h3 className="text-white font-semibold flex items-center gap-2 mt-6"><Music size={16}/> Vibe Control</h3>
+                                <select className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setFormData({...formData, vibe: e.target.value})}>
+                                    <option value="lofi" className="text-black">Lo-Fi Chill (Safe)</option>
+                                    <option value="jazz" className="text-black">Smooth Jazz (Classy)</option>
+                                    <option value="pop" className="text-black">Upbeat Pop (Fun)</option>
+                                </select>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-white/90 mb-1">The Question</label>
-                                <input type="text" defaultValue="Will you be my Valentine?" className="w-full glass-input rounded-xl px-4 py-3" 
-                                    onChange={e => setFormData({...formData, message: e.target.value})} />
+
+                            <div className="space-y-4">
+                                <h3 className="text-white font-semibold flex items-center gap-2"><Smartphone size={16}/> Memory Lane (Optional)</h3>
+                                <p className="text-xs text-white/60">Paste direct image URLs (Discord/Imgur/etc.)</p>
+                                <input placeholder="Photo URL 1 (The Meet)" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, img1: e.target.value})} />
+                                <input placeholder="Photo URL 2 (The Memory)" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, img2: e.target.value})} />
+                                <input placeholder="Photo URL 3 (The Closer)" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, img3: e.target.value})} />
+                                
+                                <h3 className="text-white font-semibold flex items-center gap-2 mt-6"><Share2 size={16}/> Surveillance (Optional)</h3>
+                                <input placeholder="Discord Webhook URL" className="w-full glass-input rounded-xl px-4 py-3 placeholder-white/50" onChange={e => setFormData({...formData, webhook: e.target.value})} />
+                                <p className="text-[10px] text-white/50">Only for advanced users. Triggers when they open the link.</p>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-white/90 mb-1">Custom Photo URL (Optional)</label>
-                                <input type="text" placeholder="https://..." className="w-full glass-input rounded-xl px-4 py-3" 
-                                    onChange={e => setFormData({...formData, imgUrl: e.target.value})} />
-                                <p className="text-xs text-white/60 mt-1">Leave blank for the 3D Heart.</p>
-                            </div>
-                            
-                            {!generatedLink ? (
-                                <button onClick={generateLink} className="w-full bg-white text-rose-500 font-bold py-4 rounded-xl shadow-lg hover:bg-rose-50 transition-all mt-4">
-                                    Generate Link
+                        </div>
+
+                        <div className="mt-8 pt-6 border-t border-white/20">
+                            {!link ? (
+                                <button onClick={generate} className="w-full bg-white text-rose-500 font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all flex items-center justify-center gap-2">
+                                    <Heart className="fill-current" size={20}/> Generate Trap Link
                                 </button>
                             ) : (
-                                <div className="mt-6 bg-white/20 p-4 rounded-xl border border-white/40">
-                                    <p className="text-sm text-white mb-2 break-all font-mono bg-black/10 p-2 rounded">{generatedLink}</p>
-                                    <button onClick={copyToClipboard} className="w-full bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-600 transition-all">
-                                        Copy Link
-                                    </button>
-                                    <a href={generatedLink} target="_blank" className="block text-center text-white/80 text-sm mt-3 hover:underline">Preview</a>
+                                <div className="bg-black/20 p-4 rounded-xl backdrop-blur-sm border border-white/30">
+                                    <p className="text-white/80 text-xs font-mono break-all mb-3 bg-black/20 p-2 rounded">{link}</p>
+                                    <div className="flex gap-3">
+                                        <button onClick={() => navigator.clipboard.writeText(link)} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                                            <Copy size={18}/> Copy Link
+                                        </button>
+                                        <a href={link} target="_blank" className="flex-1 bg-white/20 hover:bg-white/30 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2">
+                                            Test It <ChevronRight size={18}/>
+                                        </a>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -172,153 +214,198 @@
             );
         };
 
-        // 2. THE DATE SCHEDULER (Post-Success)
-        const DateScheduler = ({ partnerName, senderName }) => {
-            const [plan, setPlan] = useState({ date: '', time: '', food: 'Sushi', activity: 'Dinner' });
-
-            const sendInvite = () => {
-                const text = `Hey ${senderName}! Yes, I'll be your Valentine! 💖 \n\nI'm free on ${plan.date} at ${plan.time}.\nLet's get ${plan.food} for ${plan.activity}. \n\nDon't be late! 😉`;
-                const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-                window.location.href = url;
-            };
-
-            return (
-                <div className="glass-panel p-8 rounded-[32px] text-center animate-pop max-w-md w-full mx-auto mt-10">
-                    <div className="mb-6">
-                        <div className="w-20 h-20 bg-white/30 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-md">
-                            <span className="text-4xl">📅</span>
-                        </div>
-                        <h2 className="font-serif text-2xl text-white font-bold">It's a Date!</h2>
-                        <p className="text-white/80 text-sm">Lock in the details to make it official.</p>
-                    </div>
-
-                    <div className="space-y-3 text-left">
-                        <div>
-                            <label className="text-xs text-white/70 ml-1">When?</label>
-                            <input type="date" className="w-full glass-input rounded-xl px-4 py-2" 
-                                onChange={e => setPlan({...plan, date: e.target.value})} />
-                        </div>
-                        <div>
-                            <label className="text-xs text-white/70 ml-1">Time?</label>
-                            <input type="time" className="w-full glass-input rounded-xl px-4 py-2" 
-                                onChange={e => setPlan({...plan, time: e.target.value})} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div>
-                                <label className="text-xs text-white/70 ml-1">Cuisine?</label>
-                                <select className="w-full glass-input rounded-xl px-4 py-2" onChange={e => setPlan({...plan, food: e.target.value})}>
-                                    <option>Sushi</option>
-                                    <option>Italian</option>
-                                    <option>Tacos</option>
-                                    <option>Burgers</option>
-                                    <option>Surprise Me</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs text-white/70 ml-1">Vibe?</label>
-                                <select className="w-full glass-input rounded-xl px-4 py-2" onChange={e => setPlan({...plan, activity: e.target.value})}>
-                                    <option>Dinner</option>
-                                    <option>Drinks</option>
-                                    <option>Movie</option>
-                                    <option>Adventure</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onClick={sendInvite} className="w-full bg-green-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-600 transition-all mt-6 flex items-center justify-center gap-2">
-                        <span>Send via WhatsApp</span>
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                    </button>
-                </div>
-            );
-        };
-
-        // 3. THE TRAP (Recipient View)
+        // 2. THE TRAP (TARGET MODE)
         const TargetMode = ({ params }) => {
-            const [noBtnState, setNoBtnState] = useState({ x: 0, y: 0, hoverCount: 0 });
-            const [yesScale, setYesScale] = useState(1);
-            const [accepted, setAccepted] = useState(false);
+            const [step, setStep] = useState(0); // 0:Gate, 1:Memory, 2:Main, 3:Success, 4:Schedule
+            const [audio, setAudio] = useState(null);
+            const [tilt, setTilt] = useState({ x: 0, y: 0 });
             
-            const toName = params.get('to') || 'Valentine';
-            const fromName = params.get('from') || 'Secret Admirer';
-            const customMsg = params.get('message') || 'Will you be my Valentine?';
-            const imgUrl = params.get('imgUrl');
+            // Trap Data
+            const to = params.get('to');
+            const from = params.get('from');
+            const msg = params.get('message');
+            const vibe = params.get('vibe');
+            const webhook = params.get('webhook');
+            const images = [params.get('img1'), params.get('img2'), params.get('img3')].filter(Boolean);
 
-            // Rejection Heuristics
-            const handleNoInteraction = () => {
-                const x = Math.random() * (window.innerWidth < 640 ? 150 : 300) - (window.innerWidth < 640 ? 75 : 150);
-                const y = Math.random() * (window.innerWidth < 640 ? 150 : 300) - (window.innerWidth < 640 ? 75 : 150);
-                setNoBtnState(prev => ({ x, y, hoverCount: prev.hoverCount + 1 }));
-                setYesScale(prev => Math.min(prev + 0.2, 3));
-            };
+            // "No" Button Physics
+            const [noBtn, setNoBtn] = useState({ x: 0, y: 0, hover: 0 });
+            const [yesScale, setYesScale] = useState(1);
 
-            const handleYesClick = () => {
-                setAccepted(true);
-                // Trigger Massive Confetti
-                const end = Date.now() + 3000;
-                const colors = ['#ff0000', '#ffffff', '#ff69b4'];
-                (function frame() {
-                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: colors });
-                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: colors });
-                    if (Date.now() < end) requestAnimationFrame(frame);
-                }());
-            };
-
-            if (accepted) {
-                return <DateScheduler partnerName={toName} senderName={fromName} />;
-            }
-
-            const rejectionTexts = ["No", "Are you sure?", "Really?", "Don't do this!", "Last chance!", "You're breaking my heart!"];
-            const btnText = rejectionTexts[Math.min(noBtnState.hoverCount, rejectionTexts.length - 1)];
-
-            return (
-                <div className="flex flex-col items-center justify-center min-h-screen p-4">
-                    <div className="glass-panel p-8 sm:p-12 rounded-[32px] flex flex-col items-center relative z-10 transition-all duration-500 max-w-md w-full animate-slide-up">
-                        
-                        <div className="mb-6 relative w-40 h-40 sm:w-48 sm:h-48 animate-float">
-                            {imgUrl ? (
-                                <img src={imgUrl} className="w-full h-full object-cover rounded-full border-4 border-white/50 shadow-xl" />
-                            ) : (
-                                <svg viewBox="0 0 24 24" fill="none" className="w-full h-full filter drop-shadow-[0_0_15px_rgba(255,117,140,0.6)]">
-                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ff4d6d" stroke="white" strokeWidth="0.5"/>
-                                </svg>
-                            )}
-                        </div>
-
-                        <div className="h-auto mb-8 text-center">
-                            <p className="text-white/80 font-serif italic text-lg mb-2">Dearest {toName},</p>
-                            <h1 className="font-serif text-3xl sm:text-4xl text-slate-800 font-bold leading-tight drop-shadow-sm">{customMsg}</h1>
-                        </div>
-
-                        <div className="flex flex-col gap-4 w-full items-center relative h-32 justify-center">
-                            <button onClick={handleYesClick} style={{ transform: `scale(${yesScale})` }} className="z-50 bg-gradient-to-r from-romance-dark to-romance-light text-white font-bold text-lg py-3 px-10 rounded-full shadow-lg hover:shadow-2xl hover:brightness-110 active:scale-95 transition-all duration-300">
-                                Yes, I will! 💖
-                            </button>
-
-                            <button onMouseEnter={handleNoInteraction} onTouchStart={(e) => {e.preventDefault(); handleNoInteraction()}} onClick={handleNoInteraction}
-                                style={{ transform: `translate(${noBtnState.x}px, ${noBtnState.y}px)`, opacity: Math.max(0.2, 1 - (noBtnState.hoverCount * 0.1)) }}
-                                className="glass-button text-slate-600 font-bold text-sm py-2 px-6 rounded-full absolute bottom-0 border border-white/50 hover:bg-white/40">
-                                {btnText}
-                            </button>
-                        </div>
-                    </div>
-                    <p className="fixed bottom-4 text-white/40 text-xs">Made with Valentine OS</p>
-                </div>
-            );
-        };
-
-        // MAIN APP ROUTER
-        const App = () => {
-            const [params, setParams] = useState(null);
-
+            // Webhook Trigger (The Snitch)
             useEffect(() => {
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.has('to')) {
-                    setParams(urlParams);
+                if (webhook && step === 0) {
+                    try {
+                        navigator.sendBeacon(webhook, JSON.stringify({ content: `🚨 **ALERT**: ${to} has opened the Valentine Trap!` }));
+                    } catch(e) {}
                 }
             }, []);
 
+            // Parallax Effect
+            useEffect(() => {
+                const handleMove = (e) => {
+                    const x = (window.innerWidth / 2 - e.clientX) / 25;
+                    const y = (window.innerHeight / 2 - e.clientY) / 25;
+                    setTilt({ x, y });
+                };
+                window.addEventListener('mousemove', handleMove);
+                return () => window.removeEventListener('mousemove', handleMove);
+            }, []);
+
+            // Step 0: Gatekeeper (Unlock Audio)
+            if (step === 0) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm z-50">
+                        <div className="text-center animate-slide-up">
+                            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md animate-heartbeat">
+                                <Heart size={40} className="text-white fill-white" />
+                            </div>
+                            <h1 className="text-white text-3xl font-serif font-bold mb-2">For {to}</h1>
+                            <p className="text-white/70 mb-8">A special message from {from}</p>
+                            <button onClick={() => {
+                                setAudio(playAudio(vibe));
+                                setStep(images.length > 0 ? 1 : 2);
+                            }} className="bg-white text-rose-500 px-10 py-4 rounded-full font-bold text-lg shadow-xl hover:scale-105 transition-transform">
+                                Open Message
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Step 1: Memory Lane (Carousel)
+            if (step === 1) {
+                const [slide, setSlide] = useState(0);
+                useEffect(() => {
+                    if (slide >= images.length) {
+                        setTimeout(() => setStep(2), 2000);
+                        return;
+                    }
+                    const timer = setTimeout(() => setSlide(s => s + 1), 3500); // 3.5s per slide
+                    return () => clearTimeout(timer);
+                }, [slide]);
+
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4">
+                        {slide < images.length ? (
+                            <div className="glass-panel p-4 rounded-3xl max-w-sm w-full aspect-[4/5] relative overflow-hidden animate-fade-in">
+                                <img src={images[slide]} className="w-full h-full object-cover rounded-2xl" />
+                                <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
+                                    <p className="text-white font-serif text-xl italic">Remember this?</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-white font-serif text-3xl animate-pulse">Ready?</div>
+                        )}
+                    </div>
+                );
+            }
+
+            // Step 2: The Main Trap
+            if (step === 2) {
+                const moveNo = () => {
+                    setNoBtn({ 
+                        x: Math.random() * 200 - 100, 
+                        y: Math.random() * 200 - 100,
+                        hover: noBtn.hover + 1
+                    });
+                    setYesScale(s => Math.min(s + 0.1, 1.5));
+                };
+
+                const handleYes = () => {
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                    setStep(3);
+                    if (webhook) navigator.sendBeacon(webhook, JSON.stringify({ content: `✅ **SUCCESS**: ${to} said YES!` }));
+                };
+
+                const rejections = ["No", "Are you sure?", "Really?", "Don't do this", "Last chance!", "Heartbreaker!"];
+
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4" 
+                         style={{ transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)` }}>
+                        <div className="glass-panel p-8 sm:p-12 rounded-[40px] flex flex-col items-center max-w-md w-full relative transition-transform duration-100 ease-out">
+                            <div className="mb-8 relative w-40 h-40 animate-float">
+                                <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-[0_10px_20px_rgba(255,100,100,0.5)]">
+                                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ff4d6d" stroke="white" strokeWidth="1"/>
+                                </svg>
+                            </div>
+                            
+                            <h1 className="font-serif text-3xl sm:text-4xl text-slate-800 font-bold text-center mb-10 leading-tight">
+                                {msg}
+                            </h1>
+
+                            <div className="flex flex-col items-center gap-4 w-full relative h-32">
+                                <button onClick={handleYes} style={{ transform: `scale(${yesScale})` }} className="z-20 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xl py-4 px-12 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all w-full max-w-[240px]">
+                                    Yes, I will! 💖
+                                </button>
+                                
+                                <button onMouseEnter={moveNo} onTouchStart={(e) => {e.preventDefault(); moveNo()}} 
+                                    style={{ transform: `translate(${noBtn.x}px, ${noBtn.y}px)` }}
+                                    className="glass-button text-slate-600 font-medium py-2 px-6 rounded-full absolute bottom-0 border border-white/40 hover:bg-white/30 transition-all duration-300">
+                                    {rejections[Math.min(noBtn.hover, 5)]}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Step 3 & 4: Success & Scheduler
+            const [plan, setPlan] = useState({ date: '', time: '', food: 'Sushi', activity: 'Dinner' });
+
+            const finish = () => {
+                const text = `Hey ${from}! I said YES! 💖\n\nI'm free on ${plan.date} at ${plan.time}.\nWe're getting ${plan.food} for ${plan.activity}.\n\nAdd to calendar: (See attachment)`;
+                generateICS({ ...plan, who: from });
+                window.location.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="glass-panel p-8 rounded-[32px] w-full max-w-md animate-pop">
+                        <div className="text-center mb-8">
+                            <h1 className="font-serif text-3xl text-white font-bold mb-2">It's a Date! 🎉</h1>
+                            <p className="text-white/80">Lock it in so I don't forget.</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-white/70 ml-2 mb-1 block">When are you free?</label>
+                                <input type="date" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setPlan({...plan, date: e.target.value})} />
+                            </div>
+                            <div>
+                                <label className="text-xs text-white/70 ml-2 mb-1 block">What time?</label>
+                                <input type="time" className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setPlan({...plan, time: e.target.value})} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <select className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setPlan({...plan, food: e.target.value})}>
+                                    <option className="text-black">Sushi</option>
+                                    <option className="text-black">Italian</option>
+                                    <option className="text-black">Tacos</option>
+                                    <option className="text-black">Steak</option>
+                                </select>
+                                <select className="w-full glass-input rounded-xl px-4 py-3" onChange={e => setPlan({...plan, activity: e.target.value})}>
+                                    <option className="text-black">Dinner</option>
+                                    <option className="text-black">Drinks</option>
+                                    <option className="text-black">Movie</option>
+                                    <option className="text-black">Walk</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button onClick={finish} className="w-full bg-green-500 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600 transition-all mt-8 flex items-center justify-center gap-2">
+                            <Calendar size={20}/> Confirm & Send
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [params, setParams] = useState(null);
+            useEffect(() => {
+                const p = new URLSearchParams(window.location.search);
+                if (p.has('to')) setParams(p);
+            }, []);
             return params ? <TargetMode params={params} /> : <CreatorMode />;
         };
 
