@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Valentine OS v3.5</title>
+    <title>Valentine OS v4.0</title>
     
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <script>
         const TUNES = {
@@ -31,6 +32,7 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Playfair Display', 'serif'],
+                        mono: ['Courier New', 'monospace'],
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
@@ -92,6 +94,13 @@
             background-color: #FF758C;
             color: white;
         }
+
+        /* Ticket Styles */
+        .ticket-perforation {
+            background-image: radial-gradient(circle at 10px 10px, transparent 6px, #fff 7px);
+            background-size: 20px 20px;
+            background-position: -10px -10px;
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased">
@@ -99,7 +108,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         // --- INLINE ICONS ---
         const IconHeart = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>);
@@ -108,6 +117,7 @@
         const IconCopy = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>);
         const IconCalendar = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>);
         const IconRefresh = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 21h-5v-5"/></svg>);
+        const IconDownload = ({className}) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>);
 
         // --- UTILS ---
         const playAudio = (type) => {
@@ -146,7 +156,6 @@
             });
             const [link, setLink] = useState('');
 
-            // Pre-fill data if Reciprocity Mode was triggered
             useEffect(() => {
                 if (initialParams && initialParams.has('to') && initialParams.has('from')) {
                     setFormData(prev => ({
@@ -160,7 +169,6 @@
             const generate = () => {
                 if(!formData.to || !formData.from) return alert("Names are required!");
                 const params = new URLSearchParams(formData).toString();
-                // Ensure we strip any 'action' param so the link is a normal Trap Link
                 const finalLink = `${window.location.origin}${window.location.pathname}?${params}`;
                 setLink(finalLink);
             };
@@ -169,11 +177,10 @@
                 <div className="min-h-screen flex items-center justify-center p-4">
                     <div className="glass-panel w-full max-w-lg p-8 rounded-3xl animate-slide-up relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-300 to-rose-400"></div>
-                        
                         <div className="flex items-center gap-3 mb-6">
                             <div className="bg-white/20 p-3 rounded-full"><IconHeart className="text-white fill-white" /></div>
                             <div>
-                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">v3.5</span></h1>
+                                <h1 className="text-2xl font-bold text-white">Valentine OS <span className="text-xs opacity-70 border border-white/30 px-2 py-0.5 rounded-full">v4.0</span></h1>
                                 <p className="text-white/70 text-sm">Create your conversion trap.</p>
                             </div>
                         </div>
@@ -219,7 +226,7 @@
         // 2. THE TRAP (TARGET MODE)
         const TargetMode = ({ params }) => {
             // --- STATE DECLARATIONS ---
-            const [step, setStep] = useState(0); // 0:Gate, 1:Main, 2:Success/Schedule
+            const [step, setStep] = useState(0); // 0:Gate, 1:Main, 2:Schedule, 3:Ticket
             const [tilt, setTilt] = useState({ x: 0, y: 0 });
             const [noBtn, setNoBtn] = useState({ x: 0, y: 0, hover: 0 });
             const [yesScale, setYesScale] = useState(1);
@@ -230,6 +237,9 @@
             const from = params.get('from');
             const msg = params.get('message');
             const vibe = params.get('vibe');
+            
+            // Ref for Ticket Capture
+            const ticketRef = useRef(null);
 
             // Parallax Effect
             useEffect(() => {
@@ -242,6 +252,37 @@
                 return () => window.removeEventListener('mousemove', handleMove);
             }, []);
 
+            // --- FUNCTIONS ---
+            const generateImage = async () => {
+                if (ticketRef.current) {
+                    try {
+                        const canvas = await html2canvas(ticketRef.current, {
+                            scale: 2, // High resolution
+                            backgroundColor: null, // Transparent bg
+                            useCORS: true
+                        });
+                        const link = document.createElement('a');
+                        link.download = `Valentine-Ticket-${to}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    } catch (err) {
+                        alert("Oops! Could not generate image. Screenshot it manually!");
+                    }
+                }
+            };
+
+            const sendWhatsApp = () => {
+                const text = `Hey ${from}! I said YES! 💖\n\nI'm free on ${plan.date} at ${plan.time}.\nWe're getting ${plan.food} for ${plan.activity}.\n\n(See attached ticket!)`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            };
+
+            const createReply = () => {
+                const newUrl = `${window.location.pathname}?to=${encodeURIComponent(from)}&from=${encodeURIComponent(to)}&action=create`;
+                window.location.href = newUrl;
+            };
+
+            // --- RENDER STEPS ---
+            
             // Step 0: Gatekeeper
             if (step === 0) {
                 return (
@@ -271,13 +312,6 @@
                     setYesScale(s => Math.min(s + 0.1, 1.5));
                 };
 
-                const handleYes = () => {
-                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                    setStep(2);
-                };
-
-                const rejections = ["No", "Are you sure?", "Really?", "Don't do this", "Last chance!", "Heartbreaker!"];
-
                 return (
                     <div className="min-h-screen flex items-center justify-center p-4" 
                          style={{ transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)` }}>
@@ -293,14 +327,14 @@
                             </h1>
 
                             <div className="flex flex-col items-center gap-4 w-full relative h-32">
-                                <button onClick={handleYes} style={{ transform: `scale(${yesScale})` }} className="z-20 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xl py-4 px-12 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all w-full max-w-[240px]">
+                                <button onClick={() => { confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); setStep(2); }} style={{ transform: `scale(${yesScale})` }} className="z-20 bg-gradient-to-r from-rose-500 to-pink-500 text-white font-bold text-xl py-4 px-12 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all w-full max-w-[240px]">
                                     Yes, I will! 💖
                                 </button>
                                 
                                 <button onMouseEnter={moveNo} onTouchStart={(e) => {e.preventDefault(); moveNo()}} 
                                     style={{ transform: `translate(${noBtn.x}px, ${noBtn.y}px)` }}
                                     className="glass-button text-slate-600 font-medium py-2 px-6 rounded-full absolute bottom-0 border border-white/40 hover:bg-white/30 transition-all duration-300">
-                                    {rejections[Math.min(noBtn.hover, 5)]}
+                                    No
                                 </button>
                             </div>
                         </div>
@@ -308,123 +342,167 @@
                 );
             }
 
-            // Step 2: Scheduler & Success
-            const finish = () => {
-                const text = `Hey ${from}! I said YES! 💖\n\nI'm free on ${plan.date} at ${plan.time}.\nWe're getting ${plan.food} for ${plan.activity}.\n\nAdd to calendar: (See attachment)`;
-                generateICS({ ...plan, who: from });
-                window.location.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            };
+            // Step 2: Scheduler
+            if (step === 2) {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4">
+                        <div className="glass-panel p-8 rounded-[32px] w-full max-w-md animate-pop">
+                            <div className="text-center mb-6">
+                                <h1 className="font-serif text-3xl text-white font-bold mb-2">It's a Date! 🎉</h1>
+                                <p className="text-white/80">Lock it in so I don't forget.</p>
+                            </div>
 
-            const createReply = () => {
-                // REVERSE UNO LOGIC:
-                // We reload the app with 'action=create' and SWAP the to/from names.
-                // Sender becomes Recipient.
-                const newUrl = `${window.location.pathname}?to=${encodeURIComponent(from)}&from=${encodeURIComponent(to)}&action=create`;
-                window.location.href = newUrl;
-            };
-
-            return (
-                <div className="min-h-screen flex items-center justify-center p-4">
-                    <div className="glass-panel p-8 rounded-[32px] w-full max-w-md animate-pop">
-                        <div className="text-center mb-6">
-                            <h1 className="font-serif text-3xl text-white font-bold mb-2">It's a Date! 🎉</h1>
-                            <p className="text-white/80">Send the details to {from}.</p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="text-xs text-white/70 ml-2 mb-1 block">When?</label>
-                                    <input type="date" className="w-full glass-input rounded-xl px-4 py-2 text-sm" onChange={e => setPlan({...plan, date: e.target.value})} />
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-white/70 ml-2 mb-1 block">When?</label>
+                                        <input type="date" className="w-full glass-input rounded-xl px-4 py-2 text-sm" onChange={e => setPlan({...plan, date: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-white/70 ml-2 mb-1 block">Time?</label>
+                                        <input type="time" className="w-full glass-input rounded-xl px-4 py-2 text-sm" onChange={e => setPlan({...plan, time: e.target.value})} />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-xs text-white/70 ml-2 mb-1 block">Time?</label>
-                                    <input type="time" className="w-full glass-input rounded-xl px-4 py-2 text-sm" onChange={e => setPlan({...plan, time: e.target.value})} />
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-white/70 ml-2 mb-1 block">Cravings?</label>
+                                        <select className="w-full glass-input rounded-xl px-4 py-2 text-sm text-white" onChange={e => setPlan({...plan, food: e.target.value})}>
+                                            <option className="text-black">Sushi</option>
+                                            <option className="text-black">Italian</option>
+                                            <option className="text-black">Tacos</option>
+                                            <option className="text-black">Steak</option>
+                                            <option className="text-black">Burgers</option>
+                                            <option className="text-black">Zobo</option>
+                                            <option className="text-black">Chapman</option>
+                                            <option className="text-black">Mama put</option>
+                                            <option className="text-black">Suya & Asun</option>
+                                            <option className="text-black">Bread & beans</option>
+                                            <option className="text-black">Snacks</option>
+                                            <option className="text-black">Shawarma</option>
+                                            <option className="text-black">Bread & Akara</option>
+                                            <option className="text-black">Coconut Candy</option>
+                                            <option className="text-black">Boli & Groundnut</option>
+                                            <option className="text-black">Surprise me</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-white/70 ml-2 mb-1 block">Activity?</label>
+                                        <select className="w-full glass-input rounded-xl px-4 py-2 text-sm text-white" onChange={e => setPlan({...plan, activity: e.target.value})}>
+                                            <option className="text-black">Dinner</option>
+                                            <option className="text-black">Drinks</option>
+                                            <option className="text-black">Movie</option>
+                                            <option className="text-black">Walk</option>
+                                            <option className="text-black">Walk in the Park</option>
+                                            <option className="text-black">Library date</option>
+                                            <option className="text-black">Karaoke Night</option>
+                                            <option className="text-black">Genital greetings</option>
+                                            <option className="text-black">Nature & Scenic</option>
+                                            <option className="text-black">Beach Day</option>
+                                            <option className="text-black">Arcade & Gaming</option>
+                                            <option className="text-black">Horseback Riding</option>
+                                            <option className="text-black">Surprise me</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="text-xs text-white/70 ml-2 mb-1 block">What to eat?</label>
-                                    <select className="w-full glass-input rounded-xl px-4 py-2 text-sm text-white" onChange={e => setPlan({...plan, food: e.target.value})}>
-                                        <option className="text-black">Sushi</option>
-                                        <option className="text-black">Italian</option>
-                                        <option className="text-black">Tacos</option>
-                                        <option className="text-black">Steak</option>
-                                        <option className="text-black">Burgers</option>
-                                        <option className="text-black">Zobo</option>
-                                        <option className="text-black">Chapman</option>
-                                        <option className="text-black">Mama put</option>
-                                        <option className="text-black">Suya & Asun</option>
-                                        <option className="text-black">Bread & beans</option>
-                                        <option className="text-black">Snacks</option>
-                                        <option className="text-black">Shawarma</option>
-                                        <option className="text-black">Bread & Akara</option>
-                                        <option className="text-black">Coconut Candy</option>
-                                        <option className="text-black">Boli & Groundnut</option>
-                                        <option className="text-black">Surprise me</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-xs text-white/70 ml-2 mb-1 block">What to do?</label>
-                                    <select className="w-full glass-input rounded-xl px-4 py-2 text-sm text-white" onChange={e => setPlan({...plan, activity: e.target.value})}>
-                                        <option className="text-black">Dinner</option>
-                                        <option className="text-black">Drinks</option>
-                                        <option className="text-black">Movie</option>
-                                        <option className="text-black">Walk</option>
-                                        <option className="text-black">Walk in the Park</option>
-                                        <option className="text-black">Library date</option>
-                                        <option className="text-black">Karaoke Night</option>
-                                        <option className="text-black">Genital greetings</option>
-                                        <option className="text-black">Nature & Scenic</option>
-                                        <option className="text-black">Beach Day</option>
-                                        <option className="text-black">Arcade & Gaming</option>
-                                        <option className="text-black">Horseback Riding</option>
-                                        <option className="text-black">Surprise me</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="space-y-3 mt-8">
-                            <button onClick={finish} className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
-                                <IconCalendar className="w-5 h-5"/> Send Invite (WhatsApp)
-                            </button>
-                            
-                            {/* RECIPROCITY BUTTON */}
-                            <button onClick={createReply} className="w-full bg-white/10 hover:bg-white/20 border border-white/30 text-white font-medium py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm">
-                                <IconRefresh className="w-4 h-4"/> Send a Card Back to {from}
+                            <button onClick={() => setStep(3)} className="w-full bg-white text-rose-500 font-bold py-3 rounded-xl shadow-lg hover:scale-[1.02] transition-all mt-8">
+                                Lock In Date 🔒
                             </button>
                         </div>
                     </div>
-                </div>
-            );
+                );
+            }
+
+            // Step 3: THE TICKET (Receipt View)
+            if (step === 3) {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-4 overflow-y-auto">
+                        
+                        {/* THE TICKET - This is what gets captured */}
+                        <div ref={ticketRef} className="bg-white text-slate-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden mb-8 relative">
+                            {/* Ticket Header */}
+                            <div className="bg-rose-500 p-6 text-center text-white relative">
+                                <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{backgroundImage: 'radial-gradient(#fff 2px, transparent 2px)', backgroundSize: '10px 10px'}}></div>
+                                <h2 className="font-serif text-2xl font-bold tracking-wider">OFFICIAL DATE TICKET</h2>
+                                <p className="text-xs uppercase tracking-[0.2em] opacity-80 mt-1">Admit Two • Valentine 2025</p>
+                            </div>
+
+                            {/* Ticket Body */}
+                            <div className="p-6 space-y-4 font-mono text-sm relative">
+                                <div className="flex justify-between border-b border-dashed border-gray-300 pb-2">
+                                    <span className="text-gray-400">ISSUED TO</span>
+                                    <span className="font-bold uppercase">{from} & {to}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dashed border-gray-300 pb-2">
+                                    <span className="text-gray-400">DATE</span>
+                                    <span className="font-bold">{plan.date || 'TBD'}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dashed border-gray-300 pb-2">
+                                    <span className="text-gray-400">TIME</span>
+                                    <span className="font-bold">{plan.time || 'TBD'}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dashed border-gray-300 pb-2">
+                                    <span className="text-gray-400">CUISINE</span>
+                                    <span className="font-bold uppercase text-rose-500">{plan.food}</span>
+                                </div>
+                                <div className="flex justify-between pb-2">
+                                    <span className="text-gray-400">ACTIVITY</span>
+                                    <span className="font-bold uppercase text-rose-500">{plan.activity}</span>
+                                </div>
+                                
+                                <div className="pt-4 text-center">
+                                    <div className="inline-block border-2 border-slate-800 px-4 py-1 rounded font-bold text-xl rotate-[-12deg] opacity-80">
+                                        ACCEPTED ✅
+                                    </div>
+                                </div>
+
+                                {/* Barcode Visual */}
+                                <div className="h-8 w-full bg-slate-800 opacity-10 mt-2"></div>
+                            </div>
+                            
+                            {/* Perforation Effect */}
+                            <div className="h-4 bg-rose-500 relative">
+                                <div className="absolute -top-2 w-full h-4" style={{backgroundImage: 'radial-gradient(circle, transparent 6px, #f43f5e 6px)', backgroundSize: '15px 15px', backgroundPosition: 'center'}}></div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="w-full max-w-sm space-y-3">
+                            <button onClick={generateImage} className="w-full bg-white text-slate-800 font-bold py-3 rounded-xl shadow-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                                <IconDownload className="w-5 h-5"/> Download Ticket
+                            </button>
+                            <div className="flex gap-2">
+                                <button onClick={sendWhatsApp} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                                    WhatsApp
+                                </button>
+                                <button onClick={() => generateICS({...plan, who: from})} className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                                    Calendar
+                                </button>
+                            </div>
+                            <button onClick={createReply} className="w-full bg-white/10 hover:bg-white/20 border border-white/30 text-white text-sm py-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-4">
+                                <IconRefresh className="w-4 h-4"/> Send Card Back to {from}
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
         };
 
-        // --- MAIN ROUTER ---
         const App = () => {
             const [route, setRoute] = useState(null); 
-
             useEffect(() => {
                 const p = new URLSearchParams(window.location.search);
-                // If action=create is present, forces Creator Mode (even if 'to' exists)
                 if (p.has('action') && p.get('action') === 'create') {
                     setRoute({ mode: 'creator', params: p });
-                } 
-                // If standard trap link (has 'to'), go to Target Mode
-                else if (p.has('to')) {
+                } else if (p.has('to')) {
                     setRoute({ mode: 'target', params: p });
-                } 
-                // Default to Creator Mode
-                else {
+                } else {
                     setRoute({ mode: 'creator', params: p });
                 }
             }, []);
-
             if (!route) return null;
-            
-            return route.mode === 'target' 
-                ? <TargetMode params={route.params} /> 
-                : <CreatorMode initialParams={route.params} />;
+            return route.mode === 'target' ? <TargetMode params={route.params} /> : <CreatorMode initialParams={route.params} />;
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
